@@ -1,4 +1,4 @@
-package com.ryouonritsu.ic.ic
+package com.ryouonritsu.ic
 
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest

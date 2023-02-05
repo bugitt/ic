@@ -1,4 +1,4 @@
-package com.ryouonritsu.ic.ic
+package com.ryouonritsu.ic
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication

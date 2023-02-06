@@ -1,6 +1,9 @@
 package com.ryouonritsu.ic.entity
 
 import com.alibaba.fastjson2.to
+import com.alibaba.fastjson2.toJSONString
+import com.ryouonritsu.ic.domain.dto.SchoolInfoDTO
+import com.ryouonritsu.ic.domain.dto.SocialInfoDTO
 import com.ryouonritsu.ic.domain.dto.UserDTO
 import com.ryouonritsu.ic.domain.dto.UserInfoDTO
 import java.time.LocalDate
@@ -37,7 +40,7 @@ class User(
     @Column(name = "educational_background", columnDefinition = "VARCHAR(255) COMMENT '教育背景'")
     var educationalBackground: String = "",
     @Column(name = "user_info", columnDefinition = "LONGTEXT COMMENT '用户信息JSON'")
-    var userInfo: String = "",
+    var userInfo: String = UserInfoDTO(SchoolInfoDTO(), SocialInfoDTO()).toJSONString(),
     @Column(name = "is_admin", columnDefinition = "TINYINT(3) DEFAULT 0 COMMENT '是否为管理员'", nullable = false)
     var isAdmin: Boolean = false,
     @Column(name = "is_deleted", columnDefinition = "TINYINT(3) DEFAULT 0 COMMENT '是否已删除'", nullable = false)

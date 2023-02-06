@@ -1,5 +1,6 @@
 package com.ryouonritsu.ic.service.impl
 
+import com.ryouonritsu.ic.common.utils.MD5Util
 import com.ryouonritsu.ic.common.utils.RedisUtils
 import com.ryouonritsu.ic.common.utils.RequestContext
 import com.ryouonritsu.ic.common.utils.TokenUtils
@@ -194,7 +195,7 @@ class UserServiceImpl(
                 User(
                     email = email,
                     username = username,
-                    password = password1,
+                    password = MD5Util.encode(password1),
                     realName = realName,
                     avatar = avatar
                 )
@@ -214,7 +215,7 @@ class UserServiceImpl(
         return runCatching {
             val user =
                 userRepository.findByUsername(username) ?: return Response.failure("用户不存在")
-            if (user.password != password) return Response.failure("密码错误")
+            if (MD5Util.encode(password) != user.password) return Response.failure("密码错误")
             val token = TokenUtils.sign(user)
             if (keepLogin) redisUtils["${user.id}"] = token
             else redisUtils.set("${user.id}", token, 3, TimeUnit.DAYS)
@@ -290,7 +291,7 @@ class UserServiceImpl(
                 return runCatching {
                     val user = userRepository.findByEmail(email!!)
                         ?: return Response.failure("该邮箱未被注册, 发生意外错误, 请检查数据库")
-                    user.password = password1
+                    user.password = MD5Util.encode(password1)
                     userRepository.save(user)
                     redisUtils - "${user.id}"
                     Response.success<Unit>("修改成功")
@@ -304,10 +305,10 @@ class UserServiceImpl(
                     if (password1.isNullOrBlank() || password2.isNullOrBlank() || oldPassword.isNullOrBlank()) return Response.failure(
                         "密码不能为空"
                     )
-                    if (user.password != oldPassword) return Response.failure("原密码错误")
+                    if (MD5Util.encode(user.password) != oldPassword) return Response.failure("原密码错误")
                     if (password1.length < 8 || password1.length > 30) return Response.failure("密码长度必须在8-30位之间")
                     if (password1 != password2) return Response.failure("两次密码不一致")
-                    user.password = password1
+                    user.password = MD5Util.encode(password1)
                     userRepository.save(user)
                     redisUtils - "${user.id}"
                     Response.success<Unit>("修改成功")
@@ -420,7 +421,7 @@ class UserServiceImpl(
             val (re, msg) = verifyCodeCheck(verifyCode)
             if (!re && msg != null) return@runCatching msg
             if (redisUtils["email"] != email) return Response.failure("该邮箱与验证邮箱不匹配")
-            if (password != user.password) return Response.failure("密码错误")
+            if (MD5Util.encode(password) != user.password) return Response.failure("密码错误")
             val (code, html) = getHtml("http://localhost:8090/change_email?email=${email}")
             val success =
                 if (code == 200 && html != null) sendEmail(

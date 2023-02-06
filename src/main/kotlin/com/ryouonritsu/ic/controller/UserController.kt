@@ -85,20 +85,35 @@ class UserController(
     fun sendForgotPasswordEmail(@RequestBody request: SendForgotPasswordEmailRequest) =
         userService.sendForgotPasswordEmail(request.email)
 
-    @PostMapping("/changePassword")
-    @AuthCheck
+    @PostMapping("/changePasswordByEmail")
     @Tag(name = "用户接口")
     @Operation(
-        summary = "修改用户密码",
-        description = "可选忘记密码修改或正常修改密码, 参数的必要性根据模式选择, 如\"1: 验证码\"则表示模式1需要填写参数\"验证码\""
+        summary = "通过邮箱修改用户密码",
+        description = "需要提供邮箱, 验证码, 新密码和确认密码"
     )
-    fun changePassword(@RequestBody request: ChangePasswordRequest) = userService.changePassword(
-        request.mode,
-        request.oldPassword,
+    fun changePasswordByEmail(@RequestBody request: ChangePasswordRequest) = userService.changePassword(
+        0,
+        null,
         request.password1,
         request.password2,
         request.email,
         request.verifyCode
+    )
+
+    @PostMapping("/changePasswordByOldPassword")
+    @AuthCheck
+    @Tag(name = "用户接口")
+    @Operation(
+        summary = "通过原密码修改用户密码",
+        description = "需要提供原密码, 新密码和确认密码"
+    )
+    fun changePasswordByOldPassword(@RequestBody request: ChangePasswordRequest) = userService.changePassword(
+        1,
+        request.oldPassword,
+        request.password1,
+        request.password2,
+        null,
+        null
     )
 
     @PostMapping("/uploadFile")

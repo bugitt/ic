@@ -38,7 +38,6 @@ class WebConfiguration : WebMvcConfigurer {
             "/user/sendRegistrationVerificationCode",
             "/user/selectUserByUserId",
             "/user/sendForgotPasswordEmail",
-            "/user/changePassword",
             "/doc.html",
             "/swagger-ui/**",
             "/swagger-resources/**",

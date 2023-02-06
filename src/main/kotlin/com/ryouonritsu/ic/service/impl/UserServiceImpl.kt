@@ -301,11 +301,13 @@ class UserServiceImpl(
 
             1 -> {
                 return runCatching {
-                    val user = userRepository.findById(RequestContext.userId.get()!!).get()
+                    val user = userRepository.findById(
+                        RequestContext.userId.get() ?: return Response.failure("无法验证用户信息, 请登录!")
+                    ).get()
                     if (password1.isNullOrBlank() || password2.isNullOrBlank() || oldPassword.isNullOrBlank()) return Response.failure(
                         "密码不能为空"
                     )
-                    if (MD5Util.encode(user.password) != oldPassword) return Response.failure("原密码错误")
+                    if (MD5Util.encode(oldPassword) != user.password) return Response.failure("原密码错误")
                     if (password1.length < 8 || password1.length > 30) return Response.failure("密码长度必须在8-30位之间")
                     if (password1 != password2) return Response.failure("两次密码不一致")
                     user.password = MD5Util.encode(password1)

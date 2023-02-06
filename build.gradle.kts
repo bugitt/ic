@@ -43,6 +43,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
     implementation("com.auth0:java-jwt:4.2.1")
     implementation("com.alibaba.fastjson2:fastjson2-kotlin:2.0.23")
+    implementation("com.google.guava:guava:31.1-jre")
     compileOnly("org.projectlombok:lombok")
     runtimeOnly("com.mysql:mysql-connector-j")
     annotationProcessor("org.projectlombok:lombok")

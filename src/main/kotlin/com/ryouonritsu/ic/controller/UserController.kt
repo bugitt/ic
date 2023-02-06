@@ -1,6 +1,7 @@
 package com.ryouonritsu.ic.controller
 
 import com.ryouonritsu.ic.common.annotation.AuthCheck
+import com.ryouonritsu.ic.common.annotation.ServiceLog
 import com.ryouonritsu.ic.common.utils.RedisUtils
 import com.ryouonritsu.ic.common.utils.RequestContext
 import com.ryouonritsu.ic.domain.protocol.request.*
@@ -23,6 +24,7 @@ class UserController(
     private val userService: UserService,
     private val redisUtils: RedisUtils
 ) {
+    @ServiceLog(description = "发送注册验证码")
     @PostMapping("/sendRegistrationVerificationCode")
     @Tag(name = "用户接口")
     @Operation(
@@ -32,6 +34,7 @@ class UserController(
     fun sendRegistrationVerificationCode(@RequestBody request: SendRegistrationVerificationCodeRequest) =
         userService.sendRegistrationVerificationCode(request.email, request.modify)
 
+    @ServiceLog(description = "用户注册")
     @PostMapping("/register")
     @Tag(name = "用户接口")
     @Operation(summary = "用户注册", description = "除了真实姓名其余必填")
@@ -45,6 +48,7 @@ class UserController(
         request.realName
     )
 
+    @ServiceLog(description = "用户登录")
     @PostMapping("/login")
     @Tag(name = "用户接口")
     @Operation(
@@ -54,6 +58,7 @@ class UserController(
     fun login(@RequestBody request: LoginRequest) =
         userService.login(request.username, request.password, request.keepLogin)
 
+    @ServiceLog(description = "用户登出")
     @GetMapping("/logout")
     @AuthCheck
     @Tag(name = "用户接口")
@@ -63,12 +68,14 @@ class UserController(
         return Response.success("登出成功")
     }
 
+    @ServiceLog(description = "返回已登陆用户的信息")
     @GetMapping("/showInfo")
     @AuthCheck
     @Tag(name = "用户接口")
     @Operation(summary = "返回已登陆用户的信息", description = "需要用户登陆才能查询成功")
     fun showInfo() = userService.showInfo(RequestContext.userId.get()!!)
 
+    @ServiceLog(description = "根据用户id查询用户信息")
     @GetMapping("/selectUserByUserId")
     @Tag(name = "用户接口")
     @Operation(summary = "根据用户id查询用户信息")
@@ -79,12 +86,14 @@ class UserController(
         ) userId: Long
     ) = userService.selectUserByUserId(userId)
 
+    @ServiceLog(description = "发送找回密码验证码")
     @PostMapping("/sendForgotPasswordEmail")
     @Tag(name = "用户接口")
     @Operation(summary = "发送找回密码验证码", description = "发送找回密码验证码到指定邮箱")
     fun sendForgotPasswordEmail(@RequestBody request: SendForgotPasswordEmailRequest) =
         userService.sendForgotPasswordEmail(request.email)
 
+    @ServiceLog(description = "通过邮箱修改用户密码")
     @PostMapping("/changePasswordByEmail")
     @Tag(name = "用户接口")
     @Operation(
@@ -100,6 +109,7 @@ class UserController(
         request.verifyCode
     )
 
+    @ServiceLog(description = "通过原密码修改用户密码")
     @PostMapping("/changePasswordByOldPassword")
     @AuthCheck
     @Tag(name = "用户接口")
@@ -116,6 +126,7 @@ class UserController(
         null
     )
 
+    @ServiceLog(description = "上传文件", printRequest = false)
     @PostMapping("/uploadFile")
     @AuthCheck
     @Tag(name = "用户接口")
@@ -130,6 +141,7 @@ class UserController(
         ) file: MultipartFile
     ) = userService.uploadFile(file)
 
+    @ServiceLog(description = "删除文件")
     @PostMapping("/deleteFile")
     @AuthCheck
     @Tag(name = "用户接口")
@@ -139,6 +151,7 @@ class UserController(
     )
     fun deleteFile(@RequestBody request: DeleteFileRequest) = userService.deleteFile(request.url)
 
+    @ServiceLog(description = "修改用户信息")
     @PostMapping("/modifyUserInfo")
     @AuthCheck
     @Tag(name = "用户接口")
@@ -149,6 +162,7 @@ class UserController(
     fun modifyUserInfo(@RequestBody request: ModifyUserInfoRequest) =
         userService.modifyUserInfo(request)
 
+    @ServiceLog(description = "修改邮箱")
     @PostMapping("/modifyEmail")
     @AuthCheck
     @Tag(name = "用户接口")

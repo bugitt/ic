@@ -42,7 +42,25 @@ class UserServiceImpl(
     private val userRepository: UserRepository,
     private val userFileRepository: UserFileRepository,
     @Value("\${static.file.prefix}")
-    private val staticFilePrefix: String
+    private val staticFilePrefix: String,
+    @Value("\${mail.service.account}")
+    private val mailServiceAccount: String,
+    @Value("\${mail.service.password}")
+    private val mailServicePassword: String,
+    @Value("\${mail.service.nick}")
+    private val mailServiceNick: String,
+    @Value("\${mail.smtp.auth}")
+    private val mailSmtpAuth: String,
+    @Value("\${mail.smtp.host}")
+    private val mailSmtpHost: String,
+    @Value("\${mail.smtp.port}")
+    private val mailSmtpPort: String,
+    @Value("\${mail.text.change-email}")
+    private val mailTextChangeEmail: String,
+    @Value("\${mail.text.register}")
+    private val mailTextRegister: String,
+    @Value("\${mail.text.forget-password}")
+    private val mailTextForgetPassword: String,
 ) : UserService {
     companion object {
         private val log = LoggerFactory.getLogger(UserServiceImpl::class.java)
@@ -63,13 +81,13 @@ class UserServiceImpl(
     }
 
     private fun sendEmail(email: String, subject: String, html: String): Boolean {
-        val account = "inkbook_ritsu@163.com"
-        val password = "GMIRTTQDLBMWOROX"
-        val nick = "BUAA Official"
+        val account = mailServiceAccount
+        val password = mailServicePassword
+        val nick = mailServiceNick
         val props = mapOf(
-            "mail.smtp.auth" to "true",
-            "mail.smtp.host" to "smtp.163.com",
-            "mail.smtp.port" to "25"
+            "mail.smtp.auth" to mailSmtpAuth,
+            "mail.smtp.host" to mailSmtpHost,
+            "mail.smtp.port" to mailSmtpPort
         )
         val properties = Properties().apply { putAll(props) }
         val authenticator = object : Authenticator() {
@@ -147,7 +165,7 @@ class UserServiceImpl(
         if (!result && message != null) return message
         val t = userRepository.findByEmail(email!!)
         if (t != null) return Response.failure("该邮箱已被注册")
-        val subject = if (modify) "BUAA校友信息收集修改邮箱验证码" else "BUAA校友信息收集邮箱注册验证码"
+        val subject = if (modify) mailTextChangeEmail else mailTextRegister
         val verificationCode = (1..6).joinToString("") { "${(0..9).random()}" }
         return sendVerifyCodeEmailUseTemplate(
             "registration_verification",
@@ -263,7 +281,7 @@ class UserServiceImpl(
         val (result, message) = emailCheck(email)
         if (!result && message != null) return message
         userRepository.findByEmail(email!!) ?: return Response.failure("该邮箱未被注册")
-        val subject = "BUAA校友信息收集邮箱找回密码验证码"
+        val subject = mailTextForgetPassword
         val verificationCode = (1..6).joinToString("") { "${(0..9).random()}" }
         return sendVerifyCodeEmailUseTemplate(
             "forgot_password",

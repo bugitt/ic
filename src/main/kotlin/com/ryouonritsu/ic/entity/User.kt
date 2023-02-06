@@ -58,6 +58,7 @@ class User(
 
         companion object {
             fun valueOf(code: Int) = values().find { it.code == code } ?: SECRET
+            fun getByDesc(desc: String) = values().find { it.desc == desc } ?: SECRET
         }
     }
 

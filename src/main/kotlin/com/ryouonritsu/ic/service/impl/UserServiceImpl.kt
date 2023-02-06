@@ -1,10 +1,12 @@
 package com.ryouonritsu.ic.service.impl
 
-import com.ryouonritsu.ic.common.utils.MD5Util
-import com.ryouonritsu.ic.common.utils.RedisUtils
-import com.ryouonritsu.ic.common.utils.RequestContext
-import com.ryouonritsu.ic.common.utils.TokenUtils
+import com.alibaba.fastjson2.to
+import com.alibaba.fastjson2.toJSONString
+import com.ryouonritsu.ic.common.utils.*
+import com.ryouonritsu.ic.domain.dto.SchoolInfoDTO
+import com.ryouonritsu.ic.domain.dto.SocialInfoDTO
 import com.ryouonritsu.ic.domain.dto.UserDTO
+import com.ryouonritsu.ic.domain.dto.UserInfoDTO
 import com.ryouonritsu.ic.domain.protocol.request.ModifyUserInfoRequest
 import com.ryouonritsu.ic.domain.protocol.response.Response
 import com.ryouonritsu.ic.entity.User
@@ -18,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -385,15 +388,37 @@ class UserServiceImpl(
                 if (request.username.length > 50) return Response.failure("用户名长度不能超过50")
                 user.username = request.username
             }
+            if (!request.avatar.isNullOrBlank()) {
+                user.avatar = request.avatar
+            }
             if (!request.realName.isNullOrBlank()) {
                 if (request.realName.length > 50) return Response.failure("真实姓名长度不能超过50")
                 user.realName = request.realName
             }
-            if (!request.avatar.isNullOrBlank()) {
-                user.avatar = request.avatar
+            if (!request.gender.isNullOrBlank()) {
+                user.gender = User.Gender.getByDesc(request.gender).code
+            }
+            if (!request.birthday.isNullOrBlank()) {
+                try {
+                    user.birthday = LocalDate.parse(request.birthday, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                } catch (e: Exception) {
+                    return Response.failure("生日格式错误, 应为yyyy-MM-dd")
+                }
+            }
+            if (!request.phone.isNullOrBlank()) {
+                user.phone = request.phone
+            }
+            if (!request.location.isNullOrBlank()) {
+                user.location = request.location
             }
             if (!request.educationalBackground.isNullOrBlank()) {
                 user.educationalBackground = request.educationalBackground
+            }
+            if (request.userInfo != null) {
+                val userInfo = user.userInfo.to<UserInfoDTO>()
+                ReflectUtils.copyPropertyNonNull(SchoolInfoDTO::class, request.userInfo.schoolInfo, userInfo.schoolInfo)
+                ReflectUtils.copyPropertyNonNull(SocialInfoDTO::class, request.userInfo.socialInfo, userInfo.socialInfo)
+                user.userInfo = userInfo.toJSONString()
             }
             if (request.isAdmin != null) {
                 user.isAdmin = request.isAdmin

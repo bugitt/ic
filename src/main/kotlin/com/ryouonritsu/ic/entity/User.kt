@@ -1,7 +1,6 @@
 package com.ryouonritsu.ic.entity
 
-import com.ryouonritsu.ic.domain.dto.SchoolInfoDTO
-import com.ryouonritsu.ic.domain.dto.SocialInfoDTO
+import com.alibaba.fastjson2.to
 import com.ryouonritsu.ic.domain.dto.UserDTO
 import com.ryouonritsu.ic.domain.dto.UserInfoDTO
 import java.time.LocalDate
@@ -59,7 +58,7 @@ class User(
         }
     }
 
-    fun toDTO(schoolInfoDTO: SchoolInfoDTO, socialInfoDTO: SocialInfoDTO) = UserDTO(
+    fun toDTO() = UserDTO(
         id = "$id",
         email = email,
         username = username,
@@ -70,11 +69,9 @@ class User(
         phone = phone,
         location = location,
         educationalBackground = educationalBackground,
-        userInfo = UserInfoDTO(schoolInfoDTO, socialInfoDTO),
+        userInfo = userInfo.to<UserInfoDTO>(),
         isAdmin = isAdmin,
         isDeleted = isDeleted,
         registrationTime = registrationTime
     )
-
-    fun toDTO() = toDTO(SchoolInfoDTO(), SocialInfoDTO())
 }

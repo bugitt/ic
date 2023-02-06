@@ -1,6 +1,9 @@
 package com.ryouonritsu.ic.entity
 
+import com.ryouonritsu.ic.domain.dto.SchoolInfoDTO
+import com.ryouonritsu.ic.domain.dto.SocialInfoDTO
 import com.ryouonritsu.ic.domain.dto.UserDTO
+import com.ryouonritsu.ic.domain.dto.UserInfoDTO
 import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.persistence.*
@@ -56,7 +59,7 @@ class User(
         }
     }
 
-    fun toDTO() = UserDTO(
+    fun toDTO(schoolInfoDTO: SchoolInfoDTO, socialInfoDTO: SocialInfoDTO) = UserDTO(
         id = "$id",
         email = email,
         username = username,
@@ -67,8 +70,11 @@ class User(
         phone = phone,
         location = location,
         educationalBackground = educationalBackground,
+        userInfo = UserInfoDTO(schoolInfoDTO, socialInfoDTO),
         isAdmin = isAdmin,
         isDeleted = isDeleted,
         registrationTime = registrationTime
     )
+
+    fun toDTO() = toDTO(SchoolInfoDTO(), SocialInfoDTO())
 }

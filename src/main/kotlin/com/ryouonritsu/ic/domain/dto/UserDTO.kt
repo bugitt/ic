@@ -29,6 +29,8 @@ data class UserDTO(
     var location: String = "",
     @Schema(description = "学历", example = "PhD", required = true)
     var educationalBackground: String = "",
+    @Schema(description = "用户信息", required = true)
+    var userInfo: UserInfoDTO,
     @Schema(description = "是否管理员", example = "false", required = true)
     var isAdmin: Boolean = false,
     @Schema(description = "是否已删除", example = "false", required = true)

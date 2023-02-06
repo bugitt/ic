@@ -1,7 +1,7 @@
 package com.ryouonritsu.ic.domain.dto
 
-import com.ryouonritsu.ic.common.constants.ICConstant
 import io.swagger.v3.oas.annotations.media.Schema
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 /**
@@ -9,30 +9,30 @@ import java.time.LocalDateTime
  */
 @Schema(description = "User entity")
 data class UserDTO(
-    @Schema(description = "user id", example = "1", required = true)
+    @Schema(description = "用户ID", example = "1", required = true)
     var id: String = "0",
-    @Schema(description = "email", example = "email@example.com", required = true)
+    @Schema(description = "电子邮箱", example = "email@example.com", required = true)
     var email: String,
-    @Schema(description = "username", example = "username", required = true)
+    @Schema(description = "用户名", example = "username", required = true)
     var username: String,
-    @Schema(description = "password", example = "password", required = true)
-    var password: String,
-    @Schema(description = "credit", example = "100", required = true)
-    var credit: String = "0",
-    @Schema(description = "avatar", example = "./", required = true)
+    @Schema(description = "头像地址", example = "./", required = true)
     var avatar: String = "",
-    @Schema(description = "registration time", required = true)
-    var registrationTime: LocalDateTime = LocalDateTime.now(),
-    @Schema(description = "real name", example = "real name", required = true)
+    @Schema(description = "真实姓名", example = "real name", required = true)
     var realName: String = "",
-    @Schema(description = "是否认证", example = "false", required = true)
-    var isCertified: Boolean = false,
+    @Schema(description = "性别", example = "男", required = false)
+    var gender: String = "保密",
+    @Schema(description = "生日", example = "2000-01-01", required = false)
+    var birthday: LocalDate? = null,
+    @Schema(description = "联系方式", example = "12345678901", required = false)
+    var phone: String = "",
+    @Schema(description = "所在地", example = "China", required = false)
+    var location: String = "",
     @Schema(description = "学历", example = "PhD", required = true)
     var educationalBackground: String = "",
     @Schema(description = "是否管理员", example = "false", required = true)
     var isAdmin: Boolean = false,
-    @Schema(description = "institution id", example = "1")
-    var institutionId: String = "${ICConstant.LONG_MINUS_1}",
-    @Schema(description = "institution name", example = "institution name")
-    var institutionName: String = ICConstant.EMPTY_STR
+    @Schema(description = "是否已删除", example = "false", required = true)
+    var isDeleted: Boolean = false,
+    @Schema(description = "registration time", required = true)
+    var registrationTime: LocalDateTime = LocalDateTime.now(),
 )

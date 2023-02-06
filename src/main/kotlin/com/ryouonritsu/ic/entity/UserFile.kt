@@ -9,15 +9,15 @@ import javax.persistence.*
 class UserFile(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(columnDefinition = "BIGINT COMMENT '文件ID'")
     var id: Long = 0L,
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT COMMENT '文件URL'")
     var url: String,
-    @Column(name = "file_path", columnDefinition = "TEXT")
+    @Column(name = "file_path", columnDefinition = "TEXT COMMENT '文件路径'")
     var filePath: String = "",
-    @Column(name = "file_name", columnDefinition = "TEXT")
+    @Column(name = "file_name", columnDefinition = "TEXT COMMENT '文件名'")
     var fileName: String = "",
-    @OneToOne(targetEntity = User::class)
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
-    var user: User,
+    @Column(name = "user_id", columnDefinition = "BIGINT COMMENT '用户ID'")
+    var userId: Long,
 ) {
 }

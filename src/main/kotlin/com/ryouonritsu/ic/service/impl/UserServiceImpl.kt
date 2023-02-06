@@ -342,7 +342,7 @@ class UserServiceImpl(
                     url = fileUrl,
                     filePath = filePath,
                     fileName = fileName,
-                    user = userRepository.findById(userId!!).get()
+                    userId = userId!!
                 )
             )
             Response.success(
@@ -385,9 +385,6 @@ class UserServiceImpl(
             }
             if (!request.avatar.isNullOrBlank()) {
                 user.avatar = request.avatar
-            }
-            if (request.isCertified != null) {
-                user.isCertified = request.isCertified
             }
             if (!request.educationalBackground.isNullOrBlank()) {
                 user.educationalBackground = request.educationalBackground

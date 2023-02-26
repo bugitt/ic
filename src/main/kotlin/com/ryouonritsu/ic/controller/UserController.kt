@@ -4,15 +4,21 @@ import com.ryouonritsu.ic.common.annotation.AuthCheck
 import com.ryouonritsu.ic.common.annotation.ServiceLog
 import com.ryouonritsu.ic.common.utils.RedisUtils
 import com.ryouonritsu.ic.common.utils.RequestContext
+import com.ryouonritsu.ic.component.log
 import com.ryouonritsu.ic.domain.protocol.request.*
 import com.ryouonritsu.ic.domain.protocol.response.Response
 import com.ryouonritsu.ic.service.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.apache.tomcat.util.http.fileupload.ByteArrayOutputStream
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import java.util.*
+import javax.validation.Valid
+import javax.validation.constraints.Min
+import javax.validation.constraints.NotNull
 
 /**
  * @author ryouonritsu
@@ -172,4 +178,55 @@ class UserController(
     )
     fun modifyEmail(@RequestBody request: ModifyEmailRequest) =
         userService.modifyEmail(request.email, request.verifyCode, request.password)
+
+    @ServiceLog(description = "查询用户列表表头")
+    @GetMapping("/queryHeaders")
+    @AuthCheck
+    @Tag(name = "用户接口")
+    @Operation(
+        summary = "查询用户列表表头",
+        description = "查询用户列表表头"
+    )
+    fun queryHeaders() = userService.queryHeaders()
+
+    @ServiceLog(description = "查询用户列表")
+    @GetMapping("/list")
+    @AuthCheck
+    @Tag(name = "用户接口")
+    @Operation(
+        summary = "查询用户列表",
+        description = "查询用户列表"
+    )
+    fun list(
+        @RequestParam("page") @Parameter(
+            description = "页码, 从1开始",
+            required = true
+        ) @Valid @NotNull @Min(1) page: Int?,
+        @RequestParam("limit") @Parameter(
+            description = "每页数量, 大于0",
+            required = true
+        ) @Valid @NotNull @Min(1) limit: Int?
+    ) = userService.list(page ?: 1, limit ?: 10)
+
+    @ServiceLog(description = "用户列表下载", printResponse = false)
+    @GetMapping("/download")
+    @AuthCheck
+    @Tag(name = "用户接口")
+    @Operation(
+        summary = "用户列表下载",
+        description = "用户列表下载"
+    )
+    fun download(): ResponseEntity<ByteArray> {
+        try {
+            userService.download().use { workbook ->
+                ByteArrayOutputStream().use { os ->
+                    workbook.write(os)
+                    return ResponseEntity.ok(os.toByteArray())
+                }
+            }
+        } catch (e: Exception) {
+            log.error("[UserController.download] failed to download users info", e)
+            throw e
+        }
+    }
 }

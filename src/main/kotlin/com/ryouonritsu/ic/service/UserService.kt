@@ -1,8 +1,11 @@
 package com.ryouonritsu.ic.service
 
+import com.ryouonritsu.ic.component.ColumnDSL
 import com.ryouonritsu.ic.domain.dto.UserDTO
 import com.ryouonritsu.ic.domain.protocol.request.ModifyUserInfoRequest
+import com.ryouonritsu.ic.domain.protocol.response.ListUserResponse
 import com.ryouonritsu.ic.domain.protocol.response.Response
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import org.springframework.web.multipart.MultipartFile
 
 /**
@@ -46,4 +49,8 @@ interface UserService {
         verifyCode: String?,
         password: String?
     ): Response<Unit>
+
+    fun queryHeaders(): Response<List<ColumnDSL>>
+    fun list(page: Int, limit: Int): Response<ListUserResponse>
+    fun download(): XSSFWorkbook
 }

@@ -29,6 +29,20 @@ data class UserDTO(
     var location: String = "",
     @Schema(description = "学历", example = "PhD", required = true)
     var educationalBackground: String = "",
+    @Schema(description = "简介和主要成就", example = "一名学生", required = true)
+    var description: String = "",
+    @Schema(description = "工作单位", required = true)
+    var company: String = "",
+    @Schema(description = "所在行业", required = true)
+    var industry: String = "",
+    @Schema(description = "职务", required = true)
+    var position: String = "",
+    @Schema(description = "学号", required = true)
+    var studentId: String = "",
+    @Schema(description = "入学年份", required = true)
+    var admissionYear: String = "",
+    @Schema(description = "毕业年份", required = true)
+    var graduationYear: String = "",
     @Schema(description = "用户信息", required = true)
     var userInfo: UserInfoDTO,
     @Schema(description = "是否管理员", example = "false", required = true)

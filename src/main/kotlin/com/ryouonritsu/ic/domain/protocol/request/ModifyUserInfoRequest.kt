@@ -24,6 +24,8 @@ data class ModifyUserInfoRequest(
     val location: String?,
     @Schema(description = "学历")
     val educationalBackground: String?,
+    @Schema(description = "简介和主要成就")
+    val description: String?,
     @Schema(description = "用户信息")
     val userInfo: UserInfoDTO?,
     @Schema(description = "是否为管理员")

@@ -17,36 +17,56 @@ import javax.persistence.*
 class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(columnDefinition = "BIGINT COMMENT '用户ID'")
-    var id: Long = 0,
-    @Column(columnDefinition = "VARCHAR(255) COMMENT '邮箱'")
+    @Column(columnDefinition = "BIGINT COMMENT '用户ID'", nullable = false)
+    var id: Long = 1,
+    @Column(columnDefinition = "VARCHAR(255) DEFAULT '' COMMENT '邮箱'", nullable = false)
     var email: String,
-    @Column(columnDefinition = "VARCHAR(255) COMMENT '用户名'")
+    @Column(columnDefinition = "VARCHAR(255) DEFAULT '' COMMENT '用户名'", nullable = false)
     var username: String,
-    @Column(columnDefinition = "VARCHAR(255) COMMENT '密码'")
+    @Column(columnDefinition = "VARCHAR(255) DEFAULT '' COMMENT '密码'", nullable = false)
     var password: String,
-    @Column(columnDefinition = "VARCHAR(255) COMMENT '头像地址'")
+    @Column(columnDefinition = "VARCHAR(255) DEFAULT '' COMMENT '头像地址'", nullable = false)
     var avatar: String = "",
-    @Column(name = "real_name", columnDefinition = "VARCHAR(255) COMMENT '真实姓名'")
+    @Column(name = "real_name", columnDefinition = "VARCHAR(255) DEFAULT '' COMMENT '真实姓名'", nullable = false)
     var realName: String = "",
-    @Column(name = "gender", columnDefinition = "TINYINT(3) DEFAULT 0 COMMENT '性别, 0保密, 1男, 2女'")
+    @Column(
+        name = "gender",
+        columnDefinition = "TINYINT(3) DEFAULT '0' COMMENT '性别, 0保密, 1男, 2女'",
+        nullable = false
+    )
     var gender: Int = 0,
-    @Column(name = "birthday", columnDefinition = "DATE COMMENT '生日'")
-    var birthday: LocalDate? = null,
-    @Column(name = "phone", columnDefinition = "VARCHAR(255) COMMENT '联系方式'")
+    @Column(name = "birthday", columnDefinition = "DATE DEFAULT '1900-01-01' COMMENT '生日'", nullable = false)
+    var birthday: LocalDate = LocalDate.of(1900, 1, 1),
+    @Column(name = "phone", columnDefinition = "VARCHAR(255) DEFAULT '' COMMENT '联系方式'", nullable = false)
     var phone: String = "",
-    @Column(name = "location", columnDefinition = "VARCHAR(255) COMMENT '所在地'")
+    @Column(name = "location", columnDefinition = "VARCHAR(255) DEFAULT '' COMMENT '所在地'", nullable = false)
     var location: String = "",
-    @Column(name = "educational_background", columnDefinition = "VARCHAR(255) COMMENT '教育背景'")
+    @Column(
+        name = "educational_background",
+        columnDefinition = "VARCHAR(255) DEFAULT '' COMMENT '教育背景'",
+        nullable = false
+    )
     var educationalBackground: String = "",
-    @Column(name = "user_info", columnDefinition = "LONGTEXT COMMENT '用户信息JSON'")
+    @Column(name = "description", columnDefinition = "TEXT COMMENT '个人简介'", nullable = false)
+    var description: String = "",
+    @Column(name = "user_info", columnDefinition = "LONGTEXT COMMENT '用户信息JSON'", nullable = false)
     var userInfo: String = UserInfoDTO(SchoolInfoDTO(), SocialInfoDTO()).toJSONString(),
-    @Column(name = "is_admin", columnDefinition = "TINYINT(3) DEFAULT 0 COMMENT '是否为管理员'", nullable = false)
+    @Column(name = "is_admin", columnDefinition = "TINYINT(3) DEFAULT '0' COMMENT '是否为管理员'", nullable = false)
     var isAdmin: Boolean = false,
-    @Column(name = "is_deleted", columnDefinition = "TINYINT(3) DEFAULT 0 COMMENT '是否已删除'", nullable = false)
+    @Column(name = "is_deleted", columnDefinition = "TINYINT(3) DEFAULT '0' COMMENT '是否已删除'", nullable = false)
     var isDeleted: Boolean = false,
-    @Column(name = "registration_time", columnDefinition = "DATETIME COMMENT '注册时间'")
-    var registrationTime: LocalDateTime = LocalDateTime.now(),
+    @Column(
+        name = "create_time",
+        columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'",
+        nullable = false
+    )
+    var createTime: LocalDateTime = LocalDateTime.now(),
+    @Column(
+        name = "modify_time",
+        columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间'",
+        nullable = false
+    )
+    var modifyTime: LocalDateTime = LocalDateTime.now(),
 ) {
     enum class Gender(
         val code: Int,
@@ -62,20 +82,30 @@ class User(
         }
     }
 
-    fun toDTO() = UserDTO(
-        id = "$id",
-        email = email,
-        username = username,
-        avatar = avatar,
-        realName = realName,
-        gender = Gender.valueOf(gender).desc,
-        birthday = birthday,
-        phone = phone,
-        location = location,
-        educationalBackground = educationalBackground,
-        userInfo = userInfo.to<UserInfoDTO>(),
-        isAdmin = isAdmin,
-        isDeleted = isDeleted,
-        registrationTime = registrationTime
-    )
+    fun toDTO(): UserDTO {
+        val userInfo = this.userInfo.to<UserInfoDTO>()
+        return UserDTO(
+            id = "$id",
+            email = email,
+            username = username,
+            avatar = avatar,
+            realName = realName,
+            gender = Gender.valueOf(gender).desc,
+            birthday = birthday,
+            phone = phone,
+            location = location,
+            educationalBackground = educationalBackground,
+            description = description,
+            company = userInfo.socialInfo.company ?: "",
+            industry = userInfo.socialInfo.industry ?: "",
+            position = userInfo.socialInfo.position ?: "",
+            studentId = userInfo.schoolInfo.studentId ?: "",
+            admissionYear = userInfo.schoolInfo.admissionYear ?: "",
+            graduationYear = userInfo.schoolInfo.graduationYear ?: "",
+            userInfo = userInfo,
+            isAdmin = isAdmin,
+            isDeleted = isDeleted,
+            registrationTime = createTime
+        )
+    }
 }

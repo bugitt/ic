@@ -1,13 +1,21 @@
 package com.ryouonritsu.ic.service.impl
 
+import com.alibaba.fastjson2.parseArray
 import com.alibaba.fastjson2.to
 import com.alibaba.fastjson2.toJSONString
+import com.ryouonritsu.ic.common.constants.ICConstant
+import com.ryouonritsu.ic.common.constants.TemplateType
+import com.ryouonritsu.ic.common.enums.ExceptionEnum
+import com.ryouonritsu.ic.common.exception.ServiceException
 import com.ryouonritsu.ic.common.utils.*
+import com.ryouonritsu.ic.component.ColumnDSL
+import com.ryouonritsu.ic.component.process
 import com.ryouonritsu.ic.domain.dto.SchoolInfoDTO
 import com.ryouonritsu.ic.domain.dto.SocialInfoDTO
 import com.ryouonritsu.ic.domain.dto.UserDTO
 import com.ryouonritsu.ic.domain.dto.UserInfoDTO
 import com.ryouonritsu.ic.domain.protocol.request.ModifyUserInfoRequest
+import com.ryouonritsu.ic.domain.protocol.response.ListUserResponse
 import com.ryouonritsu.ic.domain.protocol.response.Response
 import com.ryouonritsu.ic.entity.User
 import com.ryouonritsu.ic.entity.UserFile
@@ -15,8 +23,10 @@ import com.ryouonritsu.ic.repository.*
 import com.ryouonritsu.ic.service.UserService
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
@@ -41,6 +51,7 @@ class UserServiceImpl(
     private val redisUtils: RedisUtils,
     private val userRepository: UserRepository,
     private val userFileRepository: UserFileRepository,
+    private val tableTemplateRepository: TableTemplateRepository,
     @Value("\${static.file.prefix}")
     private val staticFilePrefix: String,
     @Value("\${mail.service.account}")
@@ -432,6 +443,9 @@ class UserServiceImpl(
             if (!request.educationalBackground.isNullOrBlank()) {
                 user.educationalBackground = request.educationalBackground
             }
+            if (!request.description.isNullOrBlank()) {
+                user.description = request.description
+            }
             if (request.userInfo != null) {
                 val userInfo = user.userInfo.to<UserInfoDTO>()
                 ReflectUtils.copyPropertyNonNull(SchoolInfoDTO::class, request.userInfo.schoolInfo, userInfo.schoolInfo)
@@ -486,5 +500,30 @@ class UserServiceImpl(
             if (it.message != null) return Response.failure("${it.message}")
             else log.error(it.stackTraceToString())
         }.getOrDefault(Response.failure("修改失败, 发生意外错误"))
+    }
+
+    override fun queryHeaders(): Response<List<ColumnDSL>> {
+        val templates = tableTemplateRepository.findByTemplateType(TemplateType.USER_LIST_TEMPLATE)
+        if (templates.isEmpty()) {
+            log.error("[UserServiceImpl.queryHeaders] 没有用户列表模板")
+            return Response.failure(ExceptionEnum.TEMPLATE_NOT_EXIST)
+        }
+        return Response.success(templates[ICConstant.INT_0].templateInfo.parseArray<ColumnDSL>())
+    }
+
+    override fun list(page: Int, limit: Int): Response<ListUserResponse> {
+        val result = userRepository.list(PageRequest.of(page - 1, limit))
+        val total = result.totalElements
+        val users = result.content.map { it.toDTO() }
+        return Response.success(ListUserResponse(total, users))
+    }
+
+    override fun download(): XSSFWorkbook {
+        val headers = queryHeaders().data ?: run {
+            log.error("[UserServiceImpl.download] 没有用户列表模板")
+            throw ServiceException(ExceptionEnum.TEMPLATE_NOT_EXIST)
+        }
+        val data = userRepository.findAll().map { it.toDTO() }
+        return XSSFWorkbook().process(headers, data)
     }
 }

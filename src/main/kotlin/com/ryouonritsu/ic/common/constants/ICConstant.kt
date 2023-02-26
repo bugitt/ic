@@ -5,7 +5,12 @@ package com.ryouonritsu.ic.common.constants
  */
 object ICConstant {
     /**
-     * 整形-1
+     * Int型0
+     */
+    const val INT_0 = 0
+
+    /**
+     * Long型-1
      */
     const val LONG_MINUS_1 = -1L
 

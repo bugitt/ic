@@ -2,6 +2,8 @@ package com.ryouonritsu.ic.controller
 
 import com.ryouonritsu.ic.common.annotation.AuthCheck
 import com.ryouonritsu.ic.common.annotation.ServiceLog
+import com.ryouonritsu.ic.common.enums.AuthEnum
+import com.ryouonritsu.ic.common.utils.DownloadUtils
 import com.ryouonritsu.ic.common.utils.RedisUtils
 import com.ryouonritsu.ic.common.utils.RequestContext
 import com.ryouonritsu.ic.component.log
@@ -15,6 +17,7 @@ import org.apache.tomcat.util.http.fileupload.ByteArrayOutputStream
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
+import java.time.LocalDateTime
 import java.util.*
 import javax.validation.Valid
 import javax.validation.constraints.Min
@@ -106,14 +109,15 @@ class UserController(
         summary = "通过邮箱修改用户密码",
         description = "需要提供邮箱, 验证码, 新密码和确认密码"
     )
-    fun changePasswordByEmail(@RequestBody request: ChangePasswordRequest) = userService.changePassword(
-        0,
-        null,
-        request.password1,
-        request.password2,
-        request.email,
-        request.verifyCode
-    )
+    fun changePasswordByEmail(@RequestBody request: ChangePasswordRequest) =
+        userService.changePassword(
+            0,
+            null,
+            request.password1,
+            request.password2,
+            request.email,
+            request.verifyCode
+        )
 
     @ServiceLog(description = "通过原密码修改用户密码")
     @PostMapping("/changePasswordByOldPassword")
@@ -123,14 +127,15 @@ class UserController(
         summary = "通过原密码修改用户密码",
         description = "需要提供原密码, 新密码和确认密码"
     )
-    fun changePasswordByOldPassword(@RequestBody request: ChangePasswordRequest) = userService.changePassword(
-        1,
-        request.oldPassword,
-        request.password1,
-        request.password2,
-        null,
-        null
-    )
+    fun changePasswordByOldPassword(@RequestBody request: ChangePasswordRequest) =
+        userService.changePassword(
+            1,
+            request.oldPassword,
+            request.password1,
+            request.password2,
+            null,
+            null
+        )
 
     @ServiceLog(description = "上传文件", printRequest = false)
     @PostMapping("/uploadFile")
@@ -191,7 +196,7 @@ class UserController(
 
     @ServiceLog(description = "查询用户列表")
     @GetMapping("/list")
-    @AuthCheck
+    @AuthCheck(auth = [AuthEnum.TOKEN, AuthEnum.ADMIN])
     @Tag(name = "用户接口")
     @Operation(
         summary = "查询用户列表",
@@ -210,7 +215,7 @@ class UserController(
 
     @ServiceLog(description = "用户列表下载", printResponse = false)
     @GetMapping("/download")
-    @AuthCheck
+    @AuthCheck(auth = [AuthEnum.TOKEN, AuthEnum.ADMIN])
     @Tag(name = "用户接口")
     @Operation(
         summary = "用户列表下载",
@@ -221,12 +226,46 @@ class UserController(
             userService.download().use { workbook ->
                 ByteArrayOutputStream().use { os ->
                     workbook.write(os)
-                    return ResponseEntity.ok(os.toByteArray())
+                    return DownloadUtils.downloadFile("user_${LocalDateTime.now()}.xlsx", os.toByteArray())
                 }
             }
         } catch (e: Exception) {
             log.error("[UserController.download] failed to download users info", e)
             throw e
         }
+    }
+
+    @ServiceLog(description = "用户上传模板下载", printResponse = false)
+    @GetMapping("/downloadTemplate")
+    @AuthCheck(auth = [AuthEnum.TOKEN, AuthEnum.ADMIN])
+    @Tag(name = "用户接口")
+    @Operation(
+        summary = "用户上传模板下载",
+        description = "用户上传模板下载"
+    )
+    fun downloadTemplate(): ResponseEntity<ByteArray> {
+        try {
+            userService.downloadTemplate().use { wb ->
+                ByteArrayOutputStream().use { os ->
+                    wb.write(os)
+                    return DownloadUtils.downloadFile("user_template.xlsx", os.toByteArray())
+                }
+            }
+        } catch (e: Exception) {
+            log.error("[UserController.downloadTemplate] failed to download users template", e)
+            throw e
+        }
+    }
+
+    @ServiceLog(description = "管理员上传用户信息", printRequest = false)
+    @PostMapping("/upload")
+    @AuthCheck(auth = [AuthEnum.TOKEN, AuthEnum.ADMIN])
+    @Tag(name = "用户接口")
+    @Operation(
+        summary = "管理员上传用户信息",
+        description = "管理员上传用户信息"
+    )
+    fun upload(@Valid request: UserUploadRequest): Response<Unit> {
+        return userService.upload(request.file!!)
     }
 }

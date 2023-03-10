@@ -11,16 +11,24 @@ class UserFile(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(columnDefinition = "BIGINT COMMENT '文件ID'", nullable = false)
-    var id: Long = 1L,
-    @Column(columnDefinition = "TEXT COMMENT '文件URL'", nullable = false)
+    var id: Long = 0,
+    @Column(columnDefinition = "TEXT COMMENT '文件URL'")
     var url: String,
-    @Column(name = "file_path", columnDefinition = "TEXT COMMENT '文件路径'", nullable = false)
+    @Column(name = "file_path", columnDefinition = "TEXT COMMENT '文件路径'")
     var filePath: String = "",
-    @Column(name = "file_name", columnDefinition = "TEXT COMMENT '文件名'", nullable = false)
+    @Column(name = "file_name", columnDefinition = "TEXT COMMENT '文件名'")
     var fileName: String = "",
-    @Column(name = "user_id", columnDefinition = "BIGINT DEFAULT '0' COMMENT '用户ID'", nullable = false)
+    @Column(
+        name = "user_id",
+        columnDefinition = "BIGINT DEFAULT '0' COMMENT '用户ID'",
+        nullable = false
+    )
     var userId: Long,
-    @Column(name = "is_deleted", columnDefinition = "TINYINT(3) DEFAULT '0' COMMENT '是否已删除'", nullable = false)
+    @Column(
+        name = "is_deleted",
+        columnDefinition = "TINYINT(3) DEFAULT '0' COMMENT '是否已删除'",
+        nullable = false
+    )
     var isDeleted: Boolean = false,
     @Column(
         name = "create_time",

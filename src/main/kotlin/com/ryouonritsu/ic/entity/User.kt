@@ -18,16 +18,20 @@ class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(columnDefinition = "BIGINT COMMENT '用户ID'", nullable = false)
-    var id: Long = 1,
+    var id: Long = 0,
     @Column(columnDefinition = "VARCHAR(255) DEFAULT '' COMMENT '邮箱'", nullable = false)
     var email: String,
     @Column(columnDefinition = "VARCHAR(255) DEFAULT '' COMMENT '用户名'", nullable = false)
     var username: String,
     @Column(columnDefinition = "VARCHAR(255) DEFAULT '' COMMENT '密码'", nullable = false)
     var password: String,
-    @Column(columnDefinition = "VARCHAR(255) DEFAULT '' COMMENT '头像地址'", nullable = false)
+    @Column(columnDefinition = "TEXT COMMENT '头像地址'")
     var avatar: String = "",
-    @Column(name = "real_name", columnDefinition = "VARCHAR(255) DEFAULT '' COMMENT '真实姓名'", nullable = false)
+    @Column(
+        name = "real_name",
+        columnDefinition = "VARCHAR(255) DEFAULT '' COMMENT '真实姓名'",
+        nullable = false
+    )
     var realName: String = "",
     @Column(
         name = "gender",
@@ -35,25 +39,44 @@ class User(
         nullable = false
     )
     var gender: Int = 0,
-    @Column(name = "birthday", columnDefinition = "DATE DEFAULT '1900-01-01' COMMENT '生日'", nullable = false)
+    @Column(
+        name = "birthday",
+        columnDefinition = "DATE DEFAULT '1900-01-01' COMMENT '生日'",
+        nullable = false
+    )
     var birthday: LocalDate = LocalDate.of(1900, 1, 1),
-    @Column(name = "phone", columnDefinition = "VARCHAR(255) DEFAULT '' COMMENT '联系方式'", nullable = false)
+    @Column(
+        name = "phone",
+        columnDefinition = "VARCHAR(255) DEFAULT '' COMMENT '联系方式'",
+        nullable = false
+    )
     var phone: String = "",
-    @Column(name = "location", columnDefinition = "VARCHAR(255) DEFAULT '' COMMENT '所在地'", nullable = false)
+    @Column(
+        name = "location",
+        columnDefinition = "VARCHAR(255) DEFAULT '' COMMENT '所在地'",
+        nullable = false
+    )
     var location: String = "",
     @Column(
         name = "educational_background",
-        columnDefinition = "VARCHAR(255) DEFAULT '' COMMENT '教育背景'",
-        nullable = false
+        columnDefinition = "TEXT COMMENT '教育背景'"
     )
     var educationalBackground: String = "",
-    @Column(name = "description", columnDefinition = "TEXT COMMENT '个人简介'", nullable = false)
+    @Column(name = "description", columnDefinition = "TEXT COMMENT '个人简介'")
     var description: String = "",
-    @Column(name = "user_info", columnDefinition = "LONGTEXT COMMENT '用户信息JSON'", nullable = false)
+    @Column(name = "user_info", columnDefinition = "LONGTEXT COMMENT '用户信息JSON'")
     var userInfo: String = UserInfoDTO(SchoolInfoDTO(), SocialInfoDTO()).toJSONString(),
-    @Column(name = "is_admin", columnDefinition = "TINYINT(3) DEFAULT '0' COMMENT '是否为管理员'", nullable = false)
+    @Column(
+        name = "is_admin",
+        columnDefinition = "TINYINT(3) DEFAULT '0' COMMENT '是否为管理员'",
+        nullable = false
+    )
     var isAdmin: Boolean = false,
-    @Column(name = "is_deleted", columnDefinition = "TINYINT(3) DEFAULT '0' COMMENT '是否已删除'", nullable = false)
+    @Column(
+        name = "is_deleted",
+        columnDefinition = "TINYINT(3) DEFAULT '0' COMMENT '是否已删除'",
+        nullable = false
+    )
     var isDeleted: Boolean = false,
     @Column(
         name = "create_time",

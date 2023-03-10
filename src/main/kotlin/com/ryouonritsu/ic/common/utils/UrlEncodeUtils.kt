@@ -7,5 +7,6 @@ import java.nio.charset.StandardCharsets
  * @author ryouonritsu
  */
 object UrlEncodeUtils {
-    fun encode(value: String) = runCatching { URLEncoder.encode(value, StandardCharsets.UTF_8.name()) }.getOrNull()
+    fun encode(value: String) =
+        runCatching { URLEncoder.encode(value, StandardCharsets.UTF_8.name()) }.getOrNull()
 }

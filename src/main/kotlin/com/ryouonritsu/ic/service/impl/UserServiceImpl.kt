@@ -9,7 +9,11 @@ import com.ryouonritsu.ic.common.enums.ExceptionEnum
 import com.ryouonritsu.ic.common.exception.ServiceException
 import com.ryouonritsu.ic.common.utils.*
 import com.ryouonritsu.ic.component.ColumnDSL
+import com.ryouonritsu.ic.component.file.ExcelSheetDefinition
+import com.ryouonritsu.ic.component.file.converter.UserUploadConverter
+import com.ryouonritsu.ic.component.getTemplate
 import com.ryouonritsu.ic.component.process
+import com.ryouonritsu.ic.component.read
 import com.ryouonritsu.ic.domain.dto.SchoolInfoDTO
 import com.ryouonritsu.ic.domain.dto.SocialInfoDTO
 import com.ryouonritsu.ic.domain.dto.UserDTO
@@ -129,14 +133,14 @@ class UserServiceImpl(
         if (!email.matches(Regex("[\\w\\\\.]+@[\\w\\\\.]+\\.\\w+"))) return Pair(
             false, Response.failure("邮箱格式不正确")
         )
-        if (username.length > 50) return Pair(
-            false, Response.failure("用户名长度不能超过50")
+        if (username.length > 255) return Pair(
+            false, Response.failure("用户名长度不能超过255")
         )
-        if (password.length < 8 || password.length > 30) return Pair(
-            false, Response.failure("密码长度必须在8-30之间")
+        if (password.length > 255) return Pair(
+            false, Response.failure("密码长度不能超过255")
         )
-        if (realName.length > 50) return Pair(
-            false, Response.failure("真实姓名长度不能超过50")
+        if (realName.length > 255) return Pair(
+            false, Response.failure("真实姓名长度不能超过255")
         )
         return Pair(true, null)
     }
@@ -334,7 +338,8 @@ class UserServiceImpl(
             1 -> {
                 return runCatching {
                     val user = userRepository.findById(
-                        RequestContext.userId.get() ?: return Response.failure("无法验证用户信息, 请登录!")
+                        RequestContext.userId.get()
+                            ?: return Response.failure("无法验证用户信息, 请登录!")
                     ).get()
                     if (password1.isNullOrBlank() || password2.isNullOrBlank() || oldPassword.isNullOrBlank()) return Response.failure(
                         "密码不能为空"
@@ -429,7 +434,8 @@ class UserServiceImpl(
             }
             if (!request.birthday.isNullOrBlank()) {
                 try {
-                    user.birthday = LocalDate.parse(request.birthday, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                    user.birthday =
+                        LocalDate.parse(request.birthday, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
                 } catch (e: Exception) {
                     return Response.failure("生日格式错误, 应为yyyy-MM-dd")
                 }
@@ -448,8 +454,16 @@ class UserServiceImpl(
             }
             if (request.userInfo != null) {
                 val userInfo = user.userInfo.to<UserInfoDTO>()
-                ReflectUtils.copyPropertyNonNull(SchoolInfoDTO::class, request.userInfo.schoolInfo, userInfo.schoolInfo)
-                ReflectUtils.copyPropertyNonNull(SocialInfoDTO::class, request.userInfo.socialInfo, userInfo.socialInfo)
+                ReflectUtils.copyPropertyNonNull(
+                    SchoolInfoDTO::class,
+                    request.userInfo.schoolInfo,
+                    userInfo.schoolInfo
+                )
+                ReflectUtils.copyPropertyNonNull(
+                    SocialInfoDTO::class,
+                    request.userInfo.socialInfo,
+                    userInfo.socialInfo
+                )
                 user.userInfo = userInfo.toJSONString()
             }
             if (request.isAdmin != null) {
@@ -525,5 +539,38 @@ class UserServiceImpl(
         }
         val data = userRepository.findAll().map { it.toDTO() }
         return XSSFWorkbook().process(headers, data)
+    }
+
+    override fun downloadTemplate(): XSSFWorkbook {
+        val excelSheetDefinitions = getExcelSheetDefinitions()
+        val user = UserDTO(
+            email = "123456789@qq.com",
+            username = "123456",
+            realName = "张三",
+            gender = "男",
+            phone = "12345678999",
+            birthday = LocalDate.now(),
+            studentId = "12345678",
+            admissionYear = "2014",
+            graduationYear = "2018",
+            userInfo = UserInfoDTO(SchoolInfoDTO(), SocialInfoDTO())
+        )
+        return XSSFWorkbook().getTemplate(excelSheetDefinitions, listOf(user))
+    }
+
+    private fun getExcelSheetDefinitions(): MutableList<ExcelSheetDefinition> {
+        val templates = tableTemplateRepository.findByTemplateType(TemplateType.USER_UPLOAD_TEMPLATE)
+        if (templates.isEmpty()) {
+            log.error("[UserServiceImpl.downloadTemplate] 没有用户上传模板")
+            throw ServiceException(ExceptionEnum.TEMPLATE_NOT_EXIST)
+        }
+        return templates[ICConstant.INT_0].templateInfo.parseArray<ExcelSheetDefinition>()
+    }
+
+    override fun upload(file: MultipartFile): Response<Unit> {
+        val excelSheetDefinitions = getExcelSheetDefinitions()
+        val users = file.read(excelSheetDefinitions, UserUploadConverter::convert)
+        userRepository.saveAll(users)
+        return Response.success("上传成功")
     }
 }

@@ -31,6 +31,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.jpa.domain.Specification
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
@@ -45,6 +46,7 @@ import javax.mail.Session
 import javax.mail.Transport
 import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
+import javax.persistence.criteria.Predicate
 import kotlin.io.path.Path
 
 /**
@@ -525,8 +527,62 @@ class UserServiceImpl(
         return Response.success(templates[ICConstant.INT_0].templateInfo.parseArray<ColumnDSL>())
     }
 
-    override fun list(page: Int, limit: Int): Response<ListUserResponse> {
-        val result = userRepository.list(PageRequest.of(page - 1, limit))
+    override fun list(
+        realName: String?,
+        gender: String?,
+        birthday: String?,
+        location: String?,
+        studentId: String?,
+        classId: String?,
+        admissionYear: String?,
+        graduationYear: String?,
+        college: String?,
+        industry: String?,
+        company: String?,
+        page: Int,
+        limit: Int
+    ): Response<ListUserResponse> {
+        val specification = Specification<User> { root, query, cb ->
+            val predicates = mutableListOf<Predicate>()
+            if (!realName.isNullOrBlank()) {
+                predicates += cb.like(root.get("realName"), "%$realName%")
+            }
+            if (!gender.isNullOrBlank()) {
+                val g = User.Gender.getByDesc(gender).code
+                predicates += cb.equal(root.get<Int>("gender"), g)
+            }
+            if (!birthday.isNullOrBlank()) {
+                val b = LocalDate.parse(birthday)
+                predicates += cb.equal(root.get<LocalDate>("birthday"), b)
+            }
+            if (!location.isNullOrBlank()) {
+                predicates += cb.like(root.get("location"), "%$location%")
+            }
+            if (!studentId.isNullOrBlank()) {
+                predicates += cb.like(root.get("userInfo"), "%\"studentId\":\"$studentId\"%")
+            }
+            if (!classId.isNullOrBlank()) {
+                predicates += cb.like(root.get("userInfo"), "%\"classId\":\"$classId\"%")
+            }
+            if (!admissionYear.isNullOrBlank()) {
+                predicates += cb.like(root.get("userInfo"), "%\"admissionYear\":\"$admissionYear\"%")
+            }
+            if (!graduationYear.isNullOrBlank()) {
+                predicates += cb.like(root.get("userInfo"), "%\"graduationYear\":\"$graduationYear\"%")
+            }
+            if (!college.isNullOrBlank()) {
+                predicates += cb.like(root.get("userInfo"), "%\"college\":\"$college\"%")
+            }
+            if (!industry.isNullOrBlank()) {
+                predicates += cb.like(root.get("userInfo"), "%\"industry\":\"$industry\"%")
+            }
+            if (!company.isNullOrBlank()) {
+                predicates += cb.like(root.get("userInfo"), "%\"company\":\"$company\"%")
+            }
+            predicates += cb.equal(root.get<Boolean>("isDeleted"), false)
+            query.where(*predicates.toTypedArray()).restriction
+        }
+        val result = userRepository.findAll(specification, PageRequest.of(page - 1, limit))
         val total = result.totalElements
         val users = result.content.map { it.toDTO() }
         return Response.success(ListUserResponse(total, users))

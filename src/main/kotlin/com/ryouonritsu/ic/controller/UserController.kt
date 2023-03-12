@@ -203,6 +203,23 @@ class UserController(
         description = "查询用户列表"
     )
     fun list(
+        @RequestParam("realName", required = false) @Parameter(description = "真实姓名，模糊") realName: String?,
+        @RequestParam("gender", required = false) @Parameter(description = "性别，精确") gender: String?,
+        @RequestParam("birthday", required = false) @Parameter(description = "生日，yyyy-MM-dd，精确") birthday: String?,
+        @RequestParam("location", required = false) @Parameter(description = "位置，模糊") location: String?,
+        @RequestParam("studentId", required = false) @Parameter(description = "学号，精确") studentId: String?,
+        @RequestParam("classId", required = false) @Parameter(description = "班级，精确") classId: String?,
+        @RequestParam(
+            "admissionYear",
+            required = false
+        ) @Parameter(description = "入学时间，yyyy，精确") admissionYear: String?,
+        @RequestParam(
+            "graduationYear",
+            required = false
+        ) @Parameter(description = "毕业时间，yyyy，精确") graduationYear: String?,
+        @RequestParam("college", required = false) @Parameter(description = "学院，精确") college: String?,
+        @RequestParam("industry", required = false) @Parameter(description = "行业，精确") industry: String?,
+        @RequestParam("company", required = false) @Parameter(description = "公司，精确") company: String?,
         @RequestParam("page") @Parameter(
             description = "页码, 从1开始",
             required = true
@@ -211,7 +228,21 @@ class UserController(
             description = "每页数量, 大于0",
             required = true
         ) @Valid @NotNull @Min(1) limit: Int?
-    ) = userService.list(page ?: 1, limit ?: 10)
+    ) = userService.list(
+        realName,
+        gender,
+        birthday,
+        location,
+        studentId,
+        classId,
+        admissionYear,
+        graduationYear,
+        college,
+        industry,
+        company,
+        page ?: 1,
+        limit ?: 10
+    )
 
     @ServiceLog(description = "用户列表下载", printResponse = false)
     @GetMapping("/download")

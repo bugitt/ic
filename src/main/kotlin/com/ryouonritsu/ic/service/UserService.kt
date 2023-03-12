@@ -51,7 +51,22 @@ interface UserService {
     ): Response<Unit>
 
     fun queryHeaders(): Response<List<ColumnDSL>>
-    fun list(page: Int, limit: Int): Response<ListUserResponse>
+    fun list(
+        realName: String?,
+        gender: String?,
+        birthday: String?,
+        location: String?,
+        studentId: String?,
+        classId: String?,
+        admissionYear: String?,
+        graduationYear: String?,
+        college: String?,
+        industry: String?,
+        company: String?,
+        page: Int,
+        limit: Int
+    ): Response<ListUserResponse>
+
     fun download(): XSSFWorkbook
     fun downloadTemplate(): XSSFWorkbook
     fun upload(file: MultipartFile): Response<Unit>

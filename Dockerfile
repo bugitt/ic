@@ -1,6 +1,6 @@
 FROM openjdk:17
 
-COPY ./build/libs/ic-0.0.1-all.jar /usr/src/myapp/alumni.jar
+COPY ./build/libs/ic-0.0.1-SNAPSHOT.jar /usr/src/myapp/alumni.jar
 
 COPY /binary/mc /bin/mc
 

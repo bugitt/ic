@@ -6,4 +6,4 @@ WORKDIR /usr/src/myapp
 
 EXPOSE 8090
 
-CMD ["java", "-jar", "alumni.jar"]
+CMD ["java", "-jar", "-Dspring.config.location=/conf/application.properties", "alumni.jar"]

@@ -1,11 +1,11 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("org.springframework.boot") version "2.7.9"
+    id("org.springframework.boot") version "2.7.10"
     id("io.spring.dependency-management") version "1.1.0"
-    kotlin("jvm") version "1.8.10"
-    kotlin("plugin.spring") version "1.8.10"
-    kotlin("plugin.jpa") version "1.8.10"
+    kotlin("jvm") version "1.8.20"
+    kotlin("plugin.spring") version "1.8.20"
+    kotlin("plugin.jpa") version "1.8.20"
 }
 
 group = "com.ryouonritsu.ic"
@@ -41,8 +41,8 @@ dependencies {
     implementation("io.springfox:springfox-boot-starter:3.0.0")
     implementation("javax.mail:mail:1.5.0-b01")
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
-    implementation("com.auth0:java-jwt:4.2.1")
-    implementation("com.alibaba.fastjson2:fastjson2-kotlin:2.0.24")
+    implementation("com.auth0:java-jwt:4.4.0")
+    implementation("com.alibaba.fastjson2:fastjson2-kotlin:2.0.26")
     implementation("com.google.guava:guava:31.1-jre")
     implementation("org.apache.poi:poi-ooxml:5.2.3")
     compileOnly("org.projectlombok:lombok")

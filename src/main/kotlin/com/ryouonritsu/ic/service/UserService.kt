@@ -70,4 +70,5 @@ interface UserService {
     fun download(): XSSFWorkbook
     fun downloadTemplate(): XSSFWorkbook
     fun upload(file: MultipartFile): Response<Unit>
+    fun findByKeyword(keyword: String): Response<List<UserDTO>>
 }

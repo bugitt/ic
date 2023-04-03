@@ -417,23 +417,21 @@ class UserServiceImpl(
 
     override fun modifyUserInfo(request: ModifyUserInfoRequest): Response<Unit> {
         return runCatching {
-            val user = userRepository.findById(RequestContext.userId.get()!!).get()
+            val user = userRepository.findById(request.id ?: RequestContext.userId.get()!!).get()
+            if (!request.email.isNullOrBlank()) user.email = request.email!!
             if (!request.username.isNullOrBlank()) {
                 val t = userRepository.findByUsername(request.username)
                 if (t != null) return Response.failure("用户名已存在")
                 if (request.username.length > 50) return Response.failure("用户名长度不能超过50")
                 user.username = request.username
             }
-            if (!request.avatar.isNullOrBlank()) {
-                user.avatar = request.avatar
-            }
+            if (!request.avatar.isNullOrBlank()) user.avatar = request.avatar
             if (!request.realName.isNullOrBlank()) {
                 if (request.realName.length > 50) return Response.failure("真实姓名长度不能超过50")
                 user.realName = request.realName
             }
-            if (!request.gender.isNullOrBlank()) {
-                user.gender = User.Gender.getByDesc(request.gender).code
-            }
+            if (!request.gender.isNullOrBlank()) user.gender =
+                User.Gender.getByDesc(request.gender).code
             if (!request.birthday.isNullOrBlank()) {
                 try {
                     user.birthday =
@@ -442,18 +440,11 @@ class UserServiceImpl(
                     return Response.failure("生日格式错误, 应为yyyy-MM-dd")
                 }
             }
-            if (!request.phone.isNullOrBlank()) {
-                user.phone = request.phone
-            }
-            if (!request.location.isNullOrBlank()) {
-                user.location = request.location
-            }
-            if (!request.educationalBackground.isNullOrBlank()) {
+            if (!request.phone.isNullOrBlank()) user.phone = request.phone
+            if (!request.location.isNullOrBlank()) user.location = request.location
+            if (!request.educationalBackground.isNullOrBlank())
                 user.educationalBackground = request.educationalBackground
-            }
-            if (!request.description.isNullOrBlank()) {
-                user.description = request.description
-            }
+            if (!request.description.isNullOrBlank()) user.description = request.description
             if (request.userInfo != null) {
                 val userInfo = user.userInfo.to<UserInfoDTO>()
                 ReflectUtils.copyPropertyNonNull(
@@ -468,9 +459,8 @@ class UserServiceImpl(
                 )
                 user.userInfo = userInfo.toJSONString()
             }
-            if (request.isAdmin != null) {
-                user.isAdmin = request.isAdmin
-            }
+            if (request.isAdmin != null) user.isAdmin = request.isAdmin
+            if (request.isDeleted != null) user.isDeleted = request.isDeleted!!
             userRepository.save(user)
             Response.success<Unit>("修改成功")
         }.onFailure {
@@ -628,5 +618,10 @@ class UserServiceImpl(
         val users = file.read(excelSheetDefinitions, UserUploadConverter::convert)
         userRepository.saveAll(users)
         return Response.success("上传成功")
+    }
+
+    override fun findByKeyword(keyword: String): Response<List<UserDTO>> {
+        val users = userRepository.findByKeyword(keyword)
+        return Response.success(users.map { it.toDTO() })
     }
 }

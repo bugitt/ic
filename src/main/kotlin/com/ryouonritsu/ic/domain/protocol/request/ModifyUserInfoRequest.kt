@@ -8,6 +8,10 @@ import io.swagger.v3.oas.annotations.media.Schema
  */
 @Schema(description = "修改用户信息请求")
 data class ModifyUserInfoRequest(
+    @Schema(description = "用户Id，管理员可用")
+    var id: Long?,
+    @Schema(description = "邮箱，管理员可用")
+    var email: String?,
     @Schema(description = "用户名")
     val username: String?,
     @Schema(description = "个人头像")
@@ -30,4 +34,6 @@ data class ModifyUserInfoRequest(
     val userInfo: UserInfoDTO?,
     @Schema(description = "是否为管理员")
     val isAdmin: Boolean?,
+    @Schema(description = "是否已删除，管理员可用")
+    var isDeleted: Boolean?,
 )

@@ -168,10 +168,14 @@ class UserController(
     @Tag(name = "用户接口")
     @Operation(
         summary = "修改用户信息",
-        description = "未填写的信息则保持原样不变"
+        description = "未填写的信息则保持原样不变，注意：此接口无法设置\"管理员可用\"字段"
     )
-    fun modifyUserInfo(@RequestBody request: ModifyUserInfoRequest) =
-        userService.modifyUserInfo(request)
+    fun modifyUserInfo(@RequestBody request: ModifyUserInfoRequest): Response<Unit> {
+        request.id = null
+        request.email = null
+        request.isDeleted = null
+        return userService.modifyUserInfo(request)
+    }
 
     @ServiceLog(description = "修改邮箱")
     @PostMapping("/modifyEmail")
@@ -223,11 +227,11 @@ class UserController(
         @RequestParam("page") @Parameter(
             description = "页码, 从1开始",
             required = true
-        ) @Valid @NotNull @Min(1) page: Int?,
+        ) @Valid @Min(1) page: Int = 1,
         @RequestParam("limit") @Parameter(
             description = "每页数量, 大于0",
             required = true
-        ) @Valid @NotNull @Min(1) limit: Int?
+        ) @Valid @Min(1) limit: Int = 10
     ) = userService.list(
         realName,
         gender,
@@ -240,8 +244,8 @@ class UserController(
         college,
         industry,
         company,
-        page ?: 1,
-        limit ?: 10
+        page,
+        limit
     )
 
     @ServiceLog(description = "用户列表下载", printResponse = false)
@@ -299,4 +303,27 @@ class UserController(
     fun upload(@Valid request: UserUploadRequest): Response<Unit> {
         return userService.upload(request.file!!)
     }
+
+    @ServiceLog(description = "根据关键词查询用户信息")
+    @GetMapping("/findByKeyword")
+    @AuthCheck
+    @Tag(name = "用户接口")
+    @Operation(summary = "根据关键词查询用户信息", description = "根据关键词查询用户信息，最多返回10个")
+    fun findByKeyword(
+        @RequestParam("keyword") @Parameter(
+            description = "关键词",
+            required = true
+        ) @Valid @NotNull keyword: String?
+    ) = userService.findByKeyword(keyword!!)
+
+    @ServiceLog(description = "管理员修改用户信息")
+    @PostMapping("/modifyUserInfoAdvanced")
+    @AuthCheck(auth = [AuthEnum.TOKEN, AuthEnum.ADMIN])
+    @Tag(name = "用户接口")
+    @Operation(
+        summary = "修改指定用户信息",
+        description = "未填写的信息则保持原样不变"
+    )
+    fun modifyUserInfoAdvanced(@RequestBody request: ModifyUserInfoRequest) =
+        userService.modifyUserInfo(request)
 }

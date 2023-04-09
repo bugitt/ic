@@ -16,6 +16,9 @@ interface UserRepository : JpaRepositoryImplementation<User, Long> {
     fun findByUsername(username: String): User?
     fun findByEmail(email: String): User?
 
+    @Query("SELECT u FROM User u WHERE u.isDeleted = false AND (u.id = ?1 OR u.username LIKE %?1% OR u.realName LIKE %?1%) LIMIT 10")
+    fun findByKeyword(keyword: String): List<User>
+
     @Query("SELECT u FROM User u WHERE u.isDeleted = false ORDER BY u.createTime")
     fun list(pageable: Pageable = PageRequest.of(0, 10)): Page<User>
 

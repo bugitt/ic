@@ -86,7 +86,7 @@ fun <T> MultipartFile.read(
         val columnDefinitions = excelSheetDefinitions[index].columns
         sheet.forEach {
             if (it.rowNum == 0) return@forEach
-            data += converter(it, columnDefinitions)
+            converter(it, columnDefinitions)?.let { data += it }
         }
     }
     return data

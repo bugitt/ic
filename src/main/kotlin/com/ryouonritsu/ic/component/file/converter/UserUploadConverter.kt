@@ -15,49 +15,80 @@ import java.time.LocalDate
  * @author ryouonritsu
  */
 object UserUploadConverter {
-    fun convert(row: Row, columnDefinitions: List<ColumnDSL>): User {
-        val realName = row.getCell(0).stringCellValue
-        val email = row.getCell(1).stringCellValue
-        val gender = row.getCell(2).stringCellValue
-        val phone = when (row.getCell(3).cellType) {
-            CellType.NUMERIC -> row.getCell(3).numericCellValue.toLong().toString()
-            CellType.STRING -> row.getCell(3).stringCellValue
-            else -> ""
-        }
-        val company = row.getCell(4).stringCellValue
-        val industry = row.getCell(5).stringCellValue
-        val position = row.getCell(6).stringCellValue
-        val birthday = LocalDate.parse(row.getCell(7).stringCellValue)
-        val location = row.getCell(8).stringCellValue
-        val studentId = when (row.getCell(9).cellType) {
-            CellType.NUMERIC -> row.getCell(9).numericCellValue.toLong().toString()
-            CellType.STRING -> row.getCell(9).stringCellValue
-            else -> ""
-        }
-        val admissionYear = row.getCell(10).numericCellValue.toLong().toString()
-        val graduationYear = row.getCell(11).numericCellValue.toLong().toString()
-        val description = row.getCell(12).stringCellValue
-        val password = MD5Util.encode(studentId)
+    fun convert(row: Row, columnDefinitions: List<ColumnDSL>): User? {
+        val realName = row.getCell(1)?.stringCellValue ?: ""
+        val phone = row.getCell(2)?.let {
+            when (it.cellType) {
+                CellType.NUMERIC -> it.numericCellValue.toLong().toString()
+                CellType.STRING -> it.stringCellValue
+                else -> ""
+            }
+        } ?: ""
+        val email = row.getCell(3)?.stringCellValue ?: ""
+        // 如果phone和email都为空，则返回null
+        if (phone == "" && email == "") return null
+        val admissionYear = row.getCell(5)?.let {
+            when (it.cellType) {
+                CellType.NUMERIC -> it.numericCellValue.toLong().toString()
+                CellType.STRING -> it.stringCellValue
+                else -> ""
+            }
+        } ?: ""
+        val graduationYear = row.getCell(6)?.let {
+            when (it.cellType) {
+                CellType.NUMERIC -> it.numericCellValue.toLong().toString()
+                CellType.STRING -> it.stringCellValue
+                else -> ""
+            }
+        } ?: ""
+        // 学历
+        val degree = row.getCell(4)?.stringCellValue ?: ""
+        // 院系
+        val school = row.getCell(7)?.stringCellValue ?: ""
+        // 专业
+        val major = row.getCell(8)?.stringCellValue ?: ""
+        // 小班
+        val grade = row.getCell(9)?.stringCellValue ?: ""
+        // 大班
+        val className = row.getCell(10)?.stringCellValue ?: ""
+        // 国家
+        val country = row.getCell(11)?.stringCellValue ?: ""
+        // 省
+        val province = row.getCell(12)?.stringCellValue ?: ""
+        // 市
+        val city = row.getCell(13)?.stringCellValue ?: ""
+        // 行业
+        val industry = row.getCell(14)?.stringCellValue ?: ""
+        // 单位
+        val company = row.getCell(15)?.stringCellValue ?: ""
+        // 职务
+        val job = row.getCell(16)?.stringCellValue ?: ""
+        // 职称
+        val position = row.getCell(17)?.stringCellValue ?: ""
+        val birthday = LocalDate.parse("1970-01-01")
+        val location = country + province + city
+        val description = school + major + grade + className + degree
+        val password = MD5Util.encode("@buaa2023")
         val user = User(
-            username = studentId,
+            username = phone.ifEmpty { email },
             password = password,
             email = email,
             realName = realName,
-            gender = User.Gender.getByDesc(gender).code,
+            gender = 0,
             phone = phone,
             birthday = birthday,
             location = location,
             description = description
         )
         val schoolInfo = SchoolInfoDTO(
-            studentId = studentId,
+            studentId = "",
             admissionYear = admissionYear,
             graduationYear = graduationYear
         )
         val socialInfo = SocialInfoDTO(
             company = company,
             industry = industry,
-            position = position
+            position = "$job，$position"
         )
         val userInfo = UserInfoDTO(schoolInfo, socialInfo)
         user.userInfo = userInfo.toJSONString()

@@ -16,55 +16,37 @@ import java.time.LocalDate
  */
 object UserUploadConverter {
     fun convert(row: Row, columnDefinitions: List<ColumnDSL>): User? {
-        val realName = row.getCell(1)?.stringCellValue ?: ""
-        val phone = row.getCell(2)?.let {
-            when (it.cellType) {
-                CellType.NUMERIC -> it.numericCellValue.toLong().toString()
-                CellType.STRING -> it.stringCellValue
-                else -> ""
-            }
-        } ?: ""
-        val email = row.getCell(3)?.stringCellValue ?: ""
+        val realName = row.getCellText(1)
+        val phone = row.getCellText(2)
+        val email = row.getCellText(3)
         // 如果phone和email都为空，则返回null
         if (phone == "" && email == "") return null
-        val admissionYear = row.getCell(5)?.let {
-            when (it.cellType) {
-                CellType.NUMERIC -> it.numericCellValue.toLong().toString()
-                CellType.STRING -> it.stringCellValue
-                else -> ""
-            }
-        } ?: ""
-        val graduationYear = row.getCell(6)?.let {
-            when (it.cellType) {
-                CellType.NUMERIC -> it.numericCellValue.toLong().toString()
-                CellType.STRING -> it.stringCellValue
-                else -> ""
-            }
-        } ?: ""
+        val admissionYear = row.getCellText(5)
+        val graduationYear = row.getCellText(6)
         // 学历
-        val degree = row.getCell(4)?.stringCellValue ?: ""
+        val degree = row.getCellText(4)
         // 院系
-        val school = row.getCell(7)?.stringCellValue ?: ""
+        val school = row.getCellText(7)
         // 专业
-        val major = row.getCell(8)?.stringCellValue ?: ""
+        val major = row.getCellText(8)
         // 小班
-        val grade = row.getCell(9)?.stringCellValue ?: ""
+        val grade = row.getCellText(9)
         // 大班
-        val className = row.getCell(10)?.stringCellValue ?: ""
+        val className = row.getCellText(10)
         // 国家
-        val country = row.getCell(11)?.stringCellValue ?: ""
+        val country = row.getCellText(11)
         // 省
-        val province = row.getCell(12)?.stringCellValue ?: ""
+        val province = row.getCellText(12)
         // 市
-        val city = row.getCell(13)?.stringCellValue ?: ""
+        val city = row.getCellText(13)
         // 行业
-        val industry = row.getCell(14)?.stringCellValue ?: ""
+        val industry = row.getCellText(14)
         // 单位
-        val company = row.getCell(15)?.stringCellValue ?: ""
+        val company = row.getCellText(15)
         // 职务
-        val job = row.getCell(16)?.stringCellValue ?: ""
+        val job = row.getCellText(16)
         // 职称
-        val position = row.getCell(17)?.stringCellValue ?: ""
+        val position = row.getCellText(17)
         val birthday = LocalDate.parse("1970-01-01")
         val location = country + province + city
         val description = school + major + grade + className + degree
@@ -94,4 +76,14 @@ object UserUploadConverter {
         user.userInfo = userInfo.toJSONString()
         return user
     }
+}
+
+fun Row.getCellText(index: Int) : String {
+    return this.getCell(index)?.let {
+        when (it.cellType) {
+            CellType.NUMERIC -> it.numericCellValue.toLong().toString()
+            CellType.STRING -> it.stringCellValue
+            else -> ""
+        }
+    } ?: ""
 }
